@@ -43,7 +43,19 @@ export async function GET(req: NextRequest) {
   }
 
   // 기간 내 완료된 게임의 game_teams + 상대팀 조회
-  const { data: games, error: gamesError } = await supabase
+  type GameForRanking = {
+    id: string
+    game_teams: Array<{
+      id: string
+      side: string
+      player1_id: string
+      player2_id: string
+      sets_won: number
+      games_won: number
+    }>
+  }
+
+  const { data: games, error: gamesError } = (await supabase
     .from('games')
     .select(`
       id,
@@ -53,7 +65,10 @@ export async function GET(req: NextRequest) {
     `)
     .eq('status', 'completed')
     .gte('played_at', `${from}T00:00:00Z`)
-    .lte('played_at', `${to}T23:59:59Z`)
+    .lte('played_at', `${to}T23:59:59Z`)) as {
+      data: GameForRanking[] | null
+      error: Error | null
+    }
 
   if (gamesError) {
     return NextResponse.json(
@@ -93,14 +108,7 @@ export async function GET(req: NextRequest) {
   })
 
   for (const game of games) {
-    const teams = game.game_teams as Array<{
-      id: string
-      side: string
-      player1_id: string
-      player2_id: string
-      sets_won: number
-      games_won: number
-    }>
+    const teams = game.game_teams
 
     if (teams.length !== 2) continue
 

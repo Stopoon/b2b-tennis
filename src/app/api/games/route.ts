@@ -73,15 +73,13 @@ export async function GET(req: NextRequest) {
   if (from) query = query.gte('played_at', `${from}T00:00:00Z`)
   if (to) query = query.lte('played_at', `${to}T23:59:59Z`)
 
-  const { data: games, error } = await query
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  // 응답 형태 변환: game_teams 배열을 home_team/away_team으로 분리
-  const formattedGames = (games || []).map((game) => {
-    const teams = game.game_teams as Array<{
+  type GameWithRelations = {
+    id: string
+    played_at: string
+    recorded_by: string
+    status: string
+    created_at: string
+    game_teams: Array<{
       id: string
       side: string
       player1_id: string
@@ -91,14 +89,29 @@ export async function GET(req: NextRequest) {
       player1: { id: string; name: string; nickname: string | null }
       player2: { id: string; name: string; nickname: string | null }
     }>
-    const sets = (game.game_sets as Array<{
+    game_sets: Array<{
       id: string
       set_number: number
       home_games: number
       away_games: number
       home_tiebreak: number | null
       away_tiebreak: number | null
-    }>).sort((a, b) => a.set_number - b.set_number)
+    }>
+  }
+
+  const { data: games, error } = (await query) as {
+    data: GameWithRelations[] | null
+    error: Error | null
+  }
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // 응답 형태 변환: game_teams 배열을 home_team/away_team으로 분리
+  const formattedGames = (games || []).map((game) => {
+    const teams = game.game_teams
+    const sets = [...game.game_sets].sort((a, b) => a.set_number - b.set_number)
 
     const homeTeam = teams.find((t) => t.side === 'home')
     const awayTeam = teams.find((t) => t.side === 'away')
@@ -282,10 +295,13 @@ export async function POST(req: NextRequest) {
   }
 
   // 선수 존재 및 활성 여부 확인
-  const { data: players, error: playersError } = await supabase
+  const { data: players, error: playersError } = (await supabase
     .from('players')
     .select('id, is_active')
-    .in('id', playerIds)
+    .in('id', playerIds)) as {
+      data: Array<{ id: string; is_active: boolean }> | null
+      error: Error | null
+    }
 
   if (playersError) {
     return NextResponse.json(

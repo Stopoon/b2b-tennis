@@ -60,12 +60,12 @@ export default async function HomePage() {
       .limit(3)
 
     recentGames = (games || []).map((game) => {
-      const teams = game.game_teams as Array<{
+      const teams = game.game_teams as unknown as Array<{
         id: string; side: string; sets_won: number;
         player1: { id: string; name: string };
         player2: { id: string; name: string };
       }>
-      const sets = (game.game_sets as Array<{
+      const sets = (game.game_sets as unknown as Array<{
         set_number: number; home_games: number; away_games: number;
       }>).sort((a, b) => a.set_number - b.set_number)
 
@@ -100,7 +100,7 @@ export default async function HomePage() {
       const initStats = () => ({ games_played: 0, wins: 0, draws: 0, losses: 0, sets_for: 0, sets_against: 0, games_for: 0, games_against: 0 })
 
       for (const game of games) {
-        const teams = game.game_teams as Array<{ id: string; side: string; player1_id: string; player2_id: string; sets_won: number; games_won: number }>
+        const teams = game.game_teams as unknown as Array<{ id: string; side: string; player1_id: string; player2_id: string; sets_won: number; games_won: number }>
         if (teams.length !== 2) continue
         const homeTeam = teams.find((t) => t.side === 'home')
         const awayTeam = teams.find((t) => t.side === 'away')
