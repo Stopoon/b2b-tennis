@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -97,6 +98,13 @@ export default function LoginPage() {
               {loading ? '로그인 중...' : '로그인'}
             </button>
           </form>
+
+          <div className="mt-4 text-center text-sm text-slate-500">
+            아직 계정이 없나요?{' '}
+            <Link href="/auth/signup" className="text-green-600 font-medium hover:underline">
+              회원가입
+            </Link>
+          </div>
         </div>
       </div>
     </div>
