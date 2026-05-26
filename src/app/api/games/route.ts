@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/types/database'
+
+type GameRow = Database['public']['Tables']['games']['Row']
 
 export async function GET(req: NextRequest) {
   const supabase = createClient()
@@ -332,7 +335,7 @@ export async function POST(req: NextRequest) {
       status: 'completed',
     })
     .select()
-    .single()
+    .single() as { data: GameRow | null; error: Error | null }
 
   if (gameError || !game) {
     return NextResponse.json(
@@ -394,6 +397,10 @@ export async function POST(req: NextRequest) {
   }
 
   // 생성된 게임 전체 조회 (선수 정보 포함)
+  type CreatedGameRow = GameRow & {
+    game_teams: unknown
+    game_sets: unknown
+  }
   const { data: createdGame, error: fetchError } = await supabase
     .from('games')
     .select(`
@@ -406,7 +413,7 @@ export async function POST(req: NextRequest) {
       game_sets (id, set_number, home_games, away_games, home_tiebreak, away_tiebreak)
     `)
     .eq('id', game.id)
-    .single()
+    .single() as { data: CreatedGameRow | null; error: Error | null }
 
   if (fetchError || !createdGame) {
     // 이미 생성은 완료됨. 조회만 실패한 경우 기본 응답 반환.

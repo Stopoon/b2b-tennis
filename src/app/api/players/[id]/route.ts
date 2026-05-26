@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/types/database'
+
+type PlayerRow = Database['public']['Tables']['players']['Row']
 
 interface RouteParams {
   params: { id: string }
@@ -19,7 +22,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     .from('players')
     .select('*')
     .eq('id', params.id)
-    .single()
+    .single() as { data: PlayerRow | null; error: Error | null }
 
   if (error || !data) {
     return NextResponse.json(
@@ -88,7 +91,7 @@ export async function PUT(req: NextRequest, { params }: RouteParams) {
     .update(updateData)
     .eq('id', params.id)
     .select()
-    .single()
+    .single() as { data: PlayerRow | null; error: Error | null }
 
   if (error || !data) {
     return NextResponse.json(
@@ -115,7 +118,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     .from('players')
     .select('id')
     .eq('id', params.id)
-    .single()
+    .single() as { data: Pick<PlayerRow, 'id'> | null; error: Error | null }
 
   if (fetchError || !player) {
     return NextResponse.json(

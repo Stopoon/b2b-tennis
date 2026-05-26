@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/types/database'
+
+type GameRow = Database['public']['Tables']['games']['Row']
 
 interface RouteParams {
   params: { id: string }
@@ -20,7 +23,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     .from('games')
     .select('id, recorded_by')
     .eq('id', params.id)
-    .single()
+    .single() as { data: Pick<GameRow, 'id' | 'recorded_by'> | null; error: Error | null }
 
   if (fetchError || !game) {
     return NextResponse.json(

@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import type { Database } from '@/types/database'
+
+type PlayerRow = Database['public']['Tables']['players']['Row']
 
 export async function GET(req: NextRequest) {
   const supabase = createClient()
@@ -75,7 +78,7 @@ export async function POST(req: NextRequest) {
     .from('players')
     .insert({ name, nickname })
     .select()
-    .single()
+    .single() as { data: PlayerRow | null; error: Error | null }
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
