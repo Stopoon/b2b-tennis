@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bottom-nav-height: 64px;
+}
+
+body {
+  background-color: #f8fafc;
+  padding-bottom: var(--bottom-nav-height);
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* 안전 영역 패딩 (노치 디바이스) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  :root {
+    --bottom-nav-height: calc(64px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 포커스 스타일 */
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
